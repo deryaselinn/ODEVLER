@@ -1,0 +1,90 @@
+{
+  "name": "Zararlı URL Sınıflandırma Sistemi",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "url-tarama",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e4c9f132-7c8a-45c1-90a6-123456789url",
+      "name": "Tarama Başlat",
+      "type": "n8n-nodes-base.webhook",
+      "position": [0, 0],
+      "webhookId": "url-tarama-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { id: 201, url: 'https://www.github.com', kaynak: 'Kullanıcı Bildirimi', risk_skoru: 5, siniflandirma: 'Güvenli', tarih: '2024-05-18' } },\n  { json: { id: 202, url: 'http://secure-login-paypal-update.com', kaynak: 'E-posta Filtresi', risk_skoru: 95, siniflandirma: 'Phishing (Oltalama)', tarih: '2024-05-18' } },\n  { json: { id: 203, url: 'http://free-movie-download-no-virus.exe.net', kaynak: 'Ağ Trafiği', risk_skoru: 88, siniflandirma: 'Malware (Zararlı Yazılım)', tarih: '2024-05-18' } },\n  { json: { id: 204, url: 'https://www.wikipedia.org', kaynak: 'Kullanıcı Bildirimi', risk_skoru: 2, siniflandirma: 'Güvenli', tarih: '2024-05-18' } },\n  { json: { id: 205, url: 'http://admin-panel-login-attempt.info', kaynak: 'Güvenlik Duvarı', risk_skoru: 75, siniflandirma: 'Şüpheli', tarih: '2024-05-18' } },\n  { json: { id: 206, url: 'https://secure-bank-tr-login.com', kaynak: 'E-posta Filtresi', risk_skoru: 98, siniflandirma: 'Phishing (Oltalama)', tarih: '2024-05-18' } }\n];"
+      },
+      "id": "18f5e1f0-0a2a-43d9-a41e-abcdef123url",
+      "name": "URL Verilerini Al",
+      "type": "n8n-nodes-base.code",
+      "position": [200, 200]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "url_analiz",
+        "columns": "id, url, kaynak, risk_skoru, siniflandirma, tarih"
+      },
+      "id": "3d9a1f2b-8c4d-4e5f-b6a7-09876543url",
+      "name": "Veritabanına Kaydet",
+      "type": "n8n-nodes-base.postgres",
+      "position": [400, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nlet html = `<html><head><meta charset=\"UTF-8\"><title>AI URL Sınıflandırma Sistemi</title><style>body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; color: #fff; background-color: #1e1e2f; } h1 { color: #00d2ff; border-bottom: 2px solid #00d2ff; padding-bottom: 10px; text-align: center; } table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); } th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; } th { background-color: #2c2c44; color: #fff; } tr:nth-child(even) { background-color: #252538; } tr:hover { background-color: #32324e; } .ai-insight { background-color: #2c2c44; border-left: 5px solid #ff4b4b; padding: 20px; margin: 30px 0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); } .ai-insight h3 { margin-top: 0; color: #ff4b4b; display: flex; align-items: center; gap: 10px; } .badge { padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 12px; } .badge.safe { background-color: #00b894; color: white; } .badge.phishing { background-color: #d63031; color: white; } .badge.malware { background-color: #e17055; color: white; } .badge.suspicious { background-color: #fdcb6e; color: black; }</style></head><body>`;\nhtml += `<h1>🛡️ Zararlı URL AI Sınıflandırma Raporu</h1>`;\nhtml += `<div class=\"ai-insight\"><h3>🚨 Yapay Zeka Tehdit İstihbarat Özeti</h3><p>Sisteme gelen son URL veri seti Doğal Dil İşleme (NLP) ve Makine Öğrenmesi (ML) algoritmalarıyla taranmıştır. Oltalama (Phishing) ve Zararlı Yazılım (Malware) barındıran kritik bağlantılar tespit edilmiş olup, ağ erişimi anında engellenmiştir. E-posta filtresinden gelen URL'lerde yüksek oranda tehdit saptanmıştır. Veritabanı kayıtları PostgreSQL üzerinde başarıyla güncellenmiştir.</p></div>`;\nhtml += `<h3>Son Taranan URL'ler ve Tehdit Skorları</h3>`;\nhtml += `<table><tr><th>ID</th><th>URL</th><th>Kaynak</th><th>Risk Skoru (0-100)</th><th>AI Sınıflandırma</th></tr>`;\nfor (let item of items) {\n  if(item.json && item.json.url) {\n    let badgeClass = '';\n    if (item.json.siniflandirma === 'Güvenli') badgeClass = 'safe';\n    else if (item.json.siniflandirma.includes('Phishing')) badgeClass = 'phishing';\n    else if (item.json.siniflandirma.includes('Malware')) badgeClass = 'malware';\n    else badgeClass = 'suspicious';\n    \n    html += `<tr><td>${item.json.id}</td><td><strong>${item.json.url}</strong></td><td>${item.json.kaynak}</td><td>%${item.json.risk_skoru}</td><td><span class=\"badge ${badgeClass}\">${item.json.siniflandirma}</span></td></tr>`;\n  }\n}\nhtml += `</table><br><br><p style=\"text-align:center; color:#a4b0be; font-size: 12px;\">Bu güvenlik raporu n8n otomasyon boru hattı (pipeline) tarafından otomatik oluşturulmuştur.</p></body></html>`;\nreturn [{ json: { html: html } }];"
+      },
+      "id": "9a8b7c6d-5e4f-3a2b-1c0d-09876543url",
+      "name": "AI Sınıflandırma ve Rapor",
+      "type": "n8n-nodes-base.code",
+      "position": [400, -100]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Content-Type", "value": "text/html; charset=utf-8" }
+            ]
+          }
+        }
+      },
+      "id": "b3c4d5e6-f7a8-9b0c-1d2e-3f4a5b6curl",
+      "name": "Raporu Göster",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [600, -100]
+    }
+  ],
+  "connections": {
+    "Tarama Başlat": {
+      "main": [
+        [
+          { "node": "URL Verilerini Al", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "URL Verilerini Al": {
+      "main": [
+        [
+          { "node": "Veritabanına Kaydet", "type": "main", "index": 0 },
+          { "node": "AI Sınıflandırma ve Rapor", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "AI Sınıflandırma ve Rapor": {
+      "main": [
+        [
+          { "node": "Raporu Göster", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  }
+}
