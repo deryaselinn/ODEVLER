@@ -1,0 +1,37 @@
+# Build directories
+build/
+bin/
+out/
+
+# Compiled object files and executables
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Visual Studio / VS Code
+.vscode/
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# Log files
+*.log
+logs/
+SCAN-*.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db

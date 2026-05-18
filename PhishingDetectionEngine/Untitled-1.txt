@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>selin Test Page</h1>
+        <p>This is a test page for selin.</p>
+    <script>
+        document.write(5+3);
+    </script>       
+    </body>
+</html>
